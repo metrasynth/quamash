@@ -40,7 +40,7 @@ def _fileobj_to_fd(fileobj):
 		except (AttributeError, TypeError, ValueError) as ex:
 			raise ValueError("Invalid file object: {!r}".format(fileobj)) from ex
 	if fd < 0:
-		raise ValueError("Invalid file descriptor: {}".format(fd))
+		raise ValueError(f"Invalid file descriptor: {fd}")
 	return fd
 
 
@@ -122,15 +122,13 @@ class _Selector(selectors.BaseSelector):
 		return key
 
 	def __on_read_activated(self, fd):
-		self._logger.debug('File {} ready to read'.format(fd))
-		key = self._key_from_fd(fd)
-		if key:
+		self._logger.debug(f'File {fd} ready to read')
+		if key := self._key_from_fd(fd):
 			self.__parent._process_event(key, EVENT_READ & key.events)
 
 	def __on_write_activated(self, fd):
-		self._logger.debug('File {} ready to write'.format(fd))
-		key = self._key_from_fd(fd)
-		if key:
+		self._logger.debug(f'File {fd} ready to write')
+		if key := self._key_from_fd(fd):
 			self.__parent._process_event(key, EVENT_WRITE & key.events)
 
 	def unregister(self, fileobj):
@@ -207,17 +205,17 @@ class _SelectorEventLoop(asyncio.SelectorEventLoop):
 
 	def _process_event(self, key, mask):
 		"""Selector has delivered us an event."""
-		self._logger.debug('Processing event with key {} and mask {}'.format(key, mask))
+		self._logger.debug(f'Processing event with key {key} and mask {mask}')
 		fileobj, (reader, writer) = key.fileobj, key.data
 		if mask & selectors.EVENT_READ and reader is not None:
 			if reader._cancelled:
 				self.remove_reader(fileobj)
 			else:
-				self._logger.debug('Invoking reader callback: {}'.format(reader))
+				self._logger.debug(f'Invoking reader callback: {reader}')
 				reader._run()
 		if mask & selectors.EVENT_WRITE and writer is not None:
 			if writer._cancelled:
 				self.remove_writer(fileobj)
 			else:
-				self._logger.debug('Invoking writer callback: {}'.format(writer))
+				self._logger.debug(f'Invoking writer callback: {writer}')
 				writer._run()

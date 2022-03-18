@@ -11,7 +11,7 @@ def with_logger(cls):
 	cls_name = cls.__qualname__
 	module = cls.__module__
 	if module is not None:
-		cls_name = module + '.' + cls_name
+		cls_name = f'{module}.{cls_name}'
 	else:
 		raise AssertionError
 	setattr(cls, attr_name, logging.getLogger(cls_name))
